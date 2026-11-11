@@ -20,7 +20,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class IdleScreensaver extends StatefulWidget {
-  static const Duration idleDelay = Duration(minutes: 5);
+  static const Duration idleDelay = Duration(minutes: 3);
 
   final Widget child;
 
@@ -65,6 +65,17 @@ class _IdleScreensaverState extends State<IdleScreensaver> with WidgetsBindingOb
       // La première touche sert juste à réveiller l'écran.
       if (event is KeyUpEvent) {
         _wake();
+      }
+      return true;
+    }
+    // Bouton Retour sur l'écran d'accueil (aucune fenêtre ouverte) :
+    // affiche l'économiseur tout de suite.
+    final isBack = event.logicalKey == LogicalKeyboardKey.goBack ||
+        event.logicalKey == LogicalKeyboardKey.escape;
+    if (isBack && mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+      if (event is KeyUpEvent) {
+        _idleTimer?.cancel();
+        setState(() => _active = true);
       }
       return true;
     }
