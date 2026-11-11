@@ -124,9 +124,10 @@ class _ScreensaverContent extends StatelessWidget {
     final now = context.watch<HomeClockService>().now;
     final weather = context.watch<WeatherService>();
 
-    return Container(
+    // Material fournit le style de texte (police Inter, sans soulignement jaune).
+    return Material(
       color: const Color(0xFF14171D),
-      alignment: Alignment.center,
+      child: Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -164,6 +165,7 @@ class _ScreensaverContent extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }
