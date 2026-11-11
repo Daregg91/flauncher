@@ -47,7 +47,7 @@ class HomePalette {
 }
 
 class HomeClockService extends ChangeNotifier {
-  static const String householdNames = 'Edgar et Margot';
+  static const String householdNames = 'Margot et Edgar';
   static const int eveningStartHour = 19;
   static const int dayStartHour = 7;
 
