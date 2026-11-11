@@ -59,15 +59,7 @@ class NetworkWidget extends StatelessWidget
           case NetworkType.Unknown: iconData = Icons.link_off; break;
         }
 
-        return Icon(iconData,
-          shadows: const [
-           Shadow(
-             color: Colors.black54,
-             offset: Offset(0, 2),
-             blurRadius: 8
-           )
-          ]
-        );
+        return Icon(iconData);
       }
     );
   }

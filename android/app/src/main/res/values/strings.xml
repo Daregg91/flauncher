@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sleep_admin_description">Permet au minuteur de veille de mettre le projecteur en veille.</string>
+</resources>

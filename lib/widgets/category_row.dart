@@ -24,6 +24,7 @@ import 'package:provider/provider.dart';
 
 import '../models/app.dart';
 import '../models/category.dart';
+import '../providers/home_clock_service.dart';
 import '../providers/settings_service.dart';
 
 class CategoryRow extends StatelessWidget
@@ -78,10 +79,11 @@ class CategoryRow extends StatelessWidget
               return Padding(
                 padding: const EdgeInsets.only(left: 16, bottom: 8),
                 child: Text(category.name,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge!
-                      .copyWith(shadows: [const Shadow(color: Colors.black54, offset: Offset(1, 1), blurRadius: 8)])
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: context.watch<HomeClockService>().palette.secondaryText,
+                  )
                 ),
               );
             }

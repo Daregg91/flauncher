@@ -18,6 +18,8 @@
 
 package me.efesser.flauncher;
 
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.*;
@@ -81,6 +83,7 @@ public class MainActivity extends FlutterActivity
                 case "checkForGetContentAvailability" -> result.success(checkForGetContentAvailability());
                 case "startAmbientMode" -> result.success(startAmbientMode());
                 case "getActiveNetworkInformation" -> result.success(getActiveNetworkInformation());
+                case "sleepNow" -> result.success(sleepNow());
                 default -> throw new IllegalArgumentException();
             }
         });
@@ -340,6 +343,35 @@ public class MainActivity extends FlutterActivity
             return defaultLauncher.activityInfo.packageName.equals(getPackageName());
         }
 
+        return false;
+    }
+
+    /**
+     * Met l'appareil en veille via DevicePolicyManager.lockNow().
+     * Nécessite que SleepAdminReceiver soit administrateur de l'appareil
+     * (activé une fois via adb : dpm set-active-admin me.efesser.flauncher/.SleepAdminReceiver).
+     * Sinon, ouvre l'écran d'activation.
+     */
+    private boolean sleepNow()
+    {
+        DevicePolicyManager dpm = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        ComponentName admin = new ComponentName(this, SleepAdminReceiver.class);
+
+        if (dpm != null && dpm.isAdminActive(admin)) {
+            try {
+                dpm.lockNow();
+                return true;
+            }
+            catch (SecurityException e) {
+                return false;
+            }
+        }
+
+        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                .putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, admin)
+                .putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                        "Autorise l'écran d'accueil à mettre le projecteur en veille (minuteur de veille).");
+        tryStartActivity(intent);
         return false;
     }
 

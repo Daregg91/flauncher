@@ -24,7 +24,10 @@ import 'package:flauncher/providers/wallpaper_service.dart';
 import 'package:flauncher/widgets/apps_grid.dart';
 import 'package:flauncher/widgets/category_row.dart';
 import 'package:flauncher/widgets/launcher_alternative_view.dart';
-import 'package:flauncher/widgets/focus_aware_app_bar.dart';
+import 'package:flauncher/providers/home_clock_service.dart';
+import 'package:flauncher/widgets/home/home_footer.dart';
+import 'package:flauncher/widgets/home/home_header.dart';
+import 'package:flauncher/widgets/home/idle_screensaver.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -35,41 +38,60 @@ class FLauncher extends StatelessWidget {
   const FLauncher();
 
   @override
-  Widget build(BuildContext context) => FocusTraversalGroup(
-    policy: RowByRowTraversalPolicy(),
-    child: Stack(
-      children: [
-        Consumer<WallpaperService>(
-          builder: (_, wallpaperService, __) => _wallpaper(context, wallpaperService)
-        ),
-        Consumer<LauncherState>(
-          builder: (_, state, child) => Visibility(
-            child: child!,
-            replacement: const Center(
-              child: AlternativeLauncherView()
-            ),
-            visible: state.launcherVisible
+  Widget build(BuildContext context) => IdleScreensaver(
+    child: FocusTraversalGroup(
+      policy: RowByRowTraversalPolicy(),
+      child: Stack(
+        children: [
+          Consumer2<WallpaperService, HomeClockService>(
+            builder: (_, wallpaperService, clock, __) => _wallpaper(context, wallpaperService, clock)
           ),
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: FocusAwareAppBar(),
-            body: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Consumer<AppsService>(
-                builder: (context, appsService, _) {
-                  if (appsService.initialized) {
-                    return SingleChildScrollView(child: _sections(appsService.launcherSections));
-                  }
-                  else {
-                    return _emptyState(context);
-                  }
-                }
+          Consumer<LauncherState>(
+            builder: (_, state, child) => Visibility(
+              child: child!,
+              replacement: const Center(
+                child: AlternativeLauncherView()
+              ),
+              visible: state.launcherVisible
+            ),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(56, 36, 56, 28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const HomeHeader(),
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: Consumer<AppsService>(
+                          builder: (context, appsService, _) {
+                            if (appsService.initialized) {
+                              return Center(
+                                child: SingleChildScrollView(
+                                  clipBehavior: Clip.none,
+                                  child: _sections(appsService.launcherSections)
+                                )
+                              );
+                            }
+                            else {
+                              return _emptyState(context);
+                            }
+                          }
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const HomeFooter(),
+                    ],
+                  ),
+                ),
               )
             )
           )
-        )
-      ]
-    )
+        ]
+      )
+    ),
   );
 
   Widget _sections(List<LauncherSection> sections) => Column(
@@ -104,7 +126,7 @@ class FLauncher extends StatelessWidget {
     }).toList(),
   );
 
-  Widget _wallpaper(BuildContext context, WallpaperService wallpaperService) {
+  Widget _wallpaper(BuildContext context, WallpaperService wallpaperService, HomeClockService clock) {
     if (wallpaperService.wallpaper != null) {
       final physicalSize = MediaQuery.sizeOf(context);
       return Image(
@@ -116,7 +138,12 @@ class FLauncher extends StatelessWidget {
       );
     }
     else {
-      return Container(key: const Key("background"), decoration: BoxDecoration(gradient: wallpaperService.gradient.gradient));
+      // Fond uni qui suit la journée : gris perle le jour, ardoise le soir.
+      return AnimatedContainer(
+        key: const Key("background"),
+        duration: const Duration(seconds: 2),
+        color: clock.palette.background,
+      );
     }
   }
 
@@ -129,7 +156,7 @@ class FLauncher extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
-          Text(localizations.loading, style: Theme.of(context).textTheme.titleLarge),
+          Text(localizations.loading, style: TextStyle(fontSize: 20, color: context.read<HomeClockService>().palette.secondaryText)),
         ],
       ),
     );

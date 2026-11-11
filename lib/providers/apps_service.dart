@@ -116,28 +116,49 @@ class AppsService extends ChangeNotifier
       );
   }
 
+  /// Applis favorites d'Edgar et Margot, dans l'ordre d'affichage.
+  static const List<String> favoritePackages = [
+    'com.google.android.youtube.tv',
+    'com.netflix.mediaclient',
+    'com.nst.smartersplayer',
+    'com.canal.android.canal',
+    'com.amazon.amazonvideo.livingroom',
+    'com.disney.disneyplus',
+  ];
+
   Future<void> _initDefaultCategories() {
-    final tvApplications = _applications.values.where((application) => application.sideloaded == false);
-    final nonTvApplications = _applications.values.where((application) => application.sideloaded == true);
+    final favorites = favoritePackages
+        .where((packageName) => _applications.containsKey(packageName))
+        .map((packageName) => _applications[packageName]!)
+        .toList();
+    final others = _applications.values
+        .where((application) => !favoritePackages.contains(application.packageName))
+        .toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     return _database.transaction(() async {
-      if (tvApplications.isNotEmpty) {
-        int categoryId = await addCategory("TV Applications",
-            type: CategoryType.grid, shouldNotifyListeners: false
-        );
-
-        Category tvAppsCategory = _categoriesById[categoryId]!;
-        for (final app in tvApplications) {
-          await addToCategory(app, tvAppsCategory, shouldNotifyListeners: false);
-        }
-      }
-      if (nonTvApplications.isNotEmpty) {
-        int categoryId = await addCategory("Non-TV Applications",
+      // addCategory place chaque nouvelle catégorie en premier :
+      // on crée donc « Autres applis » avant « Favoris ».
+      if (others.isNotEmpty) {
+        int categoryId = await addCategory("Autres applis",
+          rowHeight: 96,
           shouldNotifyListeners: false,
         );
-        Category nonTvAppsCategory = _categoriesById[categoryId]!;
-        for (final app in nonTvApplications) {
-          await addToCategory(app, nonTvAppsCategory, shouldNotifyListeners: false);
+        await _database.updateCategory(categoryId, CategoriesCompanion(rowHeight: Value(96)));
+        Category othersCategory = _categoriesById[categoryId]!;
+        for (final app in others) {
+          await addToCategory(app, othersCategory, shouldNotifyListeners: false);
+        }
+      }
+      if (favorites.isNotEmpty) {
+        int categoryId = await addCategory("Favoris",
+          rowHeight: 150,
+          shouldNotifyListeners: false,
+        );
+        await _database.updateCategory(categoryId, CategoriesCompanion(rowHeight: Value(150)));
+        Category favoritesCategory = _categoriesById[categoryId]!;
+        for (final app in favorites) {
+          await addToCategory(app, favoritesCategory, shouldNotifyListeners: false);
         }
       }
     });

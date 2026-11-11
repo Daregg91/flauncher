@@ -21,6 +21,9 @@ import 'dart:async';
 import 'package:flauncher/database.dart';
 import 'package:flauncher/flauncher_channel.dart';
 import 'package:flauncher/providers/apps_service.dart';
+import 'package:flauncher/providers/home_clock_service.dart';
+import 'package:flauncher/providers/sleep_timer_service.dart';
+import 'package:flauncher/providers/weather_service.dart';
 import 'package:flauncher/providers/launcher_state.dart';
 import 'package:flauncher/providers/network_service.dart';
 import 'package:flauncher/providers/settings_service.dart';
@@ -34,7 +37,8 @@ import 'flauncher_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  initializeDateFormatting();
+  await initializeDateFormatting('fr_FR');
+  await initializeDateFormatting();
 
   final sharedPreferences = await SharedPreferences.getInstance();
   final fLauncherChannel = FLauncherChannel();
@@ -48,6 +52,9 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => AppsService(fLauncherChannel, fLauncherDatabase)),
         ChangeNotifierProvider(create: (_) => LauncherState()),
         ChangeNotifierProvider(create: (_) => NetworkService(fLauncherChannel)),
+        ChangeNotifierProvider(create: (_) => HomeClockService(), lazy: false),
+        ChangeNotifierProvider(create: (_) => WeatherService(), lazy: false),
+        ChangeNotifierProvider(create: (_) => SleepTimerService(fLauncherChannel)),
         ChangeNotifierProvider(
             create: (context) {
               SettingsService settingsService = Provider.of(context, listen: false);

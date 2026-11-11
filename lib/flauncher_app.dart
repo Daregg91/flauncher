@@ -74,9 +74,12 @@ class FLauncherApp extends StatelessWidget
         GlobalWidgetsLocalizations.delegate
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      title: 'FLauncher',
+      locale: const Locale('fr'),
+      debugShowCheckedModeBanner: false,
+      title: 'Accueil',
       theme: ThemeData(
         useMaterial3: true,
+        fontFamily: 'Inter',
         brightness: Brightness.dark,
         primarySwatch: _swatch,
         cardColor: _swatch[300],
