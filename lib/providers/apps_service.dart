@@ -131,31 +131,14 @@ class AppsService extends ChangeNotifier
         .where((packageName) => _applications.containsKey(packageName))
         .map((packageName) => _applications[packageName]!)
         .toList();
-    final others = _applications.values
-        .where((application) => !favoritePackages.contains(application.packageName))
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
+    // Une seule rangée « Favoris » : les autres applis restent accessibles
+    // via le bouton « Toutes les applis » en bas de l'écran.
     return _database.transaction(() async {
-      // addCategory place chaque nouvelle catégorie en premier :
-      // on crée donc « Autres applis » avant « Favoris ».
-      if (others.isNotEmpty) {
-        int categoryId = await addCategory("Autres applis",
-          rowHeight: 96,
-          shouldNotifyListeners: false,
-        );
-        await _database.updateCategory(categoryId, CategoriesCompanion(rowHeight: Value(96)));
-        Category othersCategory = _categoriesById[categoryId]!;
-        for (final app in others) {
-          await addToCategory(app, othersCategory, shouldNotifyListeners: false);
-        }
-      }
       if (favorites.isNotEmpty) {
         int categoryId = await addCategory("Favoris",
-          rowHeight: 150,
           shouldNotifyListeners: false,
         );
-        await _database.updateCategory(categoryId, CategoriesCompanion(rowHeight: Value(150)));
         Category favoritesCategory = _categoriesById[categoryId]!;
         for (final app in favorites) {
           await addToCategory(app, favoritesCategory, shouldNotifyListeners: false);

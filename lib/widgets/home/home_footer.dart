@@ -10,6 +10,7 @@
 
 import 'package:flauncher/providers/home_clock_service.dart';
 import 'package:flauncher/providers/sleep_timer_service.dart';
+import 'package:flauncher/widgets/home/all_apps_dialog.dart';
 import 'package:flauncher/widgets/network_widget.dart';
 import 'package:flauncher/widgets/settings/settings_panel.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,12 @@ class HomeFooter extends StatelessWidget {
               style: TextStyle(fontSize: 15, color: palette.secondaryText),
             ),
           ),
+        HomeIconButton(
+          icon: Icons.apps,
+          tooltip: 'Toutes les applis',
+          onPressed: () => showDialog(context: context, builder: (_) => const AllAppsDialog()),
+        ),
+        const SizedBox(width: 8),
         HomeIconButton(
           icon: sleep.isActive ? Icons.bedtime : Icons.bedtime_outlined,
           tooltip: 'Minuteur de veille',

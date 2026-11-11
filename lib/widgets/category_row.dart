@@ -45,27 +45,43 @@ class CategoryRow extends StatelessWidget
       categoryContent = categoryContainerEmptyState(context);
     }
     else {
-      categoryContent = SizedBox(
-        height: category.rowHeight.toDouble(),
-        child: ListView.custom(
-          padding: const EdgeInsets.all(8),
-          scrollDirection: Axis.horizontal,
-          childrenDelegate: SliverChildBuilderDelegate(
-            childCount: applications.length,
-            findChildIndexCallback: _findChildIndex,
-            (context, index) => Padding(
-                key: Key(applications[index].packageName),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: AppCard(
-                  category: category,
-                  application: applications[index],
-                  autofocus: index == 0,
-                  onMove: (direction) => _onMove(context, direction, index),
-                  onMoveEnd: () => _onMoveEnd(context)
+      // La rangée s'adapte à la largeur de l'écran : toutes les applis
+      // tiennent sur une ligne (jusqu'à 6), sans dépasser la hauteur réglée.
+      categoryContent = LayoutBuilder(
+        builder: (context, constraints) {
+          const double gap = 16;
+          final int visible = applications.length.clamp(1, 6);
+          final double cardWidth = (constraints.maxWidth - 16 - gap * visible) / visible;
+          final double fitHeight = cardWidth * 9 / 16 + 16;
+          final double height = fitHeight < category.rowHeight ? fitHeight : category.rowHeight.toDouble();
+
+          return SizedBox(
+            height: height,
+            child: Center(
+              child: ListView.custom(
+                shrinkWrap: true,
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.all(8),
+                scrollDirection: Axis.horizontal,
+                childrenDelegate: SliverChildBuilderDelegate(
+                  childCount: applications.length,
+                  findChildIndexCallback: _findChildIndex,
+                  (context, index) => Padding(
+                      key: Key(applications[index].packageName),
+                      padding: const EdgeInsets.symmetric(horizontal: gap / 2),
+                      child: AppCard(
+                        category: category,
+                        application: applications[index],
+                        autofocus: index == 0,
+                        onMove: (direction) => _onMove(context, direction, index),
+                        onMoveEnd: () => _onMoveEnd(context)
+                      )
+                  )
                 )
-            )
-          )
-        )
+              ),
+            ),
+          );
+        },
       );
     }
 
